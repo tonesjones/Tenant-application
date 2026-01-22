@@ -145,7 +145,7 @@
         
         .submit-btn:disabled {
             opacity: 0.6;
-            cursor: not-loading;
+            cursor: not-allowed;
         }
         
         .success-message {
@@ -179,15 +179,11 @@
         
         .setup-notice h3 {
             margin-bottom: 10px;
+            font-size: 18px;
         }
         
-        .setup-notice ol {
-            margin-left: 20px;
-            margin-top: 10px;
-        }
-        
-        .setup-notice li {
-            margin-bottom: 5px;
+        .setup-notice p {
+            margin-bottom: 10px;
         }
         
         .setup-notice code {
@@ -195,6 +191,7 @@
             padding: 2px 6px;
             border-radius: 3px;
             font-family: monospace;
+            font-size: 13px;
         }
         
         @media (max-width: 768px) {
@@ -220,7 +217,9 @@
         </div>
         
         <div class="form-content">
-            <form id="tenantForm" action="https://formspree.io/f/xnjjwzpb" method="POST">
+
+
+            <form id="tenantForm">
                 <!-- Personal Information -->
                 <div class="section">
                     <h2 class="section-title">Personal Information</h2>
@@ -495,6 +494,9 @@
     </div>
 
     <script>
+        // Google Apps Script Web App URL
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwjKltVB1ARrLWuSLI5W69_RMcn5Onk5B1gTK3f0UptalzxBIUpEeRp0rjXTGs3pWnj9g/exec';
+
         const form = document.getElementById('tenantForm');
         const submitBtn = document.getElementById('submitBtn');
         const successMessage = document.getElementById('successMessage');
@@ -510,23 +512,26 @@
             errorMessage.style.display = 'none';
             
             try {
-                const response = await fetch(form.action, {
+                const formData = new FormData(form);
+                
+                const response = await fetch(SCRIPT_URL, {
                     method: 'POST',
-                    body: new FormData(form),
-                    headers: {
-                        'Accept': 'application/json'
-                    }
+                    body: formData
                 });
                 
-                if (response.ok) {
+                const result = await response.json();
+                
+                if (result.result === 'success') {
                     successMessage.style.display = 'block';
                     form.reset();
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                 } else {
                     errorMessage.style.display = 'block';
+                    console.error('Error:', result.error);
                 }
             } catch (error) {
                 errorMessage.style.display = 'block';
+                console.error('Submission error:', error);
             } finally {
                 submitBtn.disabled = false;
                 submitBtn.textContent = 'Submit Application';
